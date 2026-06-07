@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nara Chatbot</title>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: linear-gradient(
+    to bottom,
+    #C7D2FE 4%,
+    rgba(204, 209, 251, 0.91) 9%,
+    rgba(225, 202, 241, 0.53) 46%,
+    rgba(242, 197, 232, 0.23) 70%,
+    rgba(255, 194, 226, 0) 81%
+  );
+}
+
+/* FLOATING PARTICLES */
+.particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(124, 111, 212, 0.15);
+  animation: floatParticle linear infinite;
+}
+
+@keyframes floatParticle {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-100px) scale(1); opacity: 0; }
+}
+
+/* CONTAINER */
+.container {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ANIMASI */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(50px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatRobot {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(124,111,212,0.4), 0 0 40px rgba(192,132,184,0.2); }
+  50%       { box-shadow: 0 0 35px rgba(124,111,212,0.7), 0 0 70px rgba(192,132,184,0.4); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* TITLE */
+h1 {
+  margin-bottom: 10px;
+  color: #5b4b8a;
+  font-size: 2rem;
+  letter-spacing: 1px;
+  opacity: 0;
+  animation: slideUp 0.7s ease 0.2s forwards;
+}
+
+.subtitle {
+  color: #9d8ec2;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  opacity: 0;
+  animation: slideUp 0.7s ease 0.4s forwards;
+}
+
+/* ROBOT WRAPPER */
+.robot-wrapper {
+  opacity: 0;
+  animation: slideUp 0.7s ease 0.6s forwards;
+}
+
+.robot {
+  width: 200px;
+  margin: 20px 0;
+  animation: floatRobot 3s ease-in-out infinite;
+  filter: drop-shadow(0 10px 20px rgba(124,111,212,0.25));
+}
+
+/* BUTTON */
+.btn-wrapper {
+  opacity: 0;
+  animation: slideUp 0.7s ease 0.9s forwards;
+}
+
+button {
+  margin-top: 10px;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #7c6fd4, #c084b8, #7c6fd4);
+  background-size: 200% auto;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: glowPulse 2.5s ease-in-out infinite, shimmer 3s linear infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -60%;
+  width: 40%; height: 200%;
+  background: rgba(255,255,255,0.25);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+
+button:hover::before {
+  left: 130%;
+}
+
+button:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 10px 30px rgba(124,111,212,0.5), 0 0 60px rgba(192,132,184,0.3);
+}
+
+button:active {
+  transform: scale(0.97);
+  filter: brightness(1.2);
+  box-shadow: 0 0 50px rgba(124,111,212,0.8), 0 0 100px rgba(192,132,184,0.5);
+}
+</style>
+</head>
+
+<body>
+
+<!-- PARTICLES -->
+<div class="particles" id="particles"></div>
+
+<div class="container">
+  <h1>Meet your Nara</h1>
+  <p class="subtitle">Your Virtual Companion, ready to help ✦</p>
+
+  <div class="robot-wrapper">
+    <img src="/static/chatbot.gif" class="robot">
+  </div>
+
+  <div class="btn-wrapper">
+    <button onclick="startChat()">Let's get started</button>
+  </div>
+</div>
+
+<script>
+function startChat(){
+  window.location.href = "/chat";
+}
+
+const container = document.getElementById('particles');
+for(let i = 0; i < 18; i++){
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = Math.random() * 12 + 4;
+  p.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%;
+    animation-duration:${Math.random()*8+6}s;
+    animation-delay:${Math.random()*8}s;
+  `;
+  container.appendChild(p);
+}
+</script>
+
+</body>
+</html>

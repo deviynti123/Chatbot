@@ -275,21 +275,21 @@ def get_response(user_input, user="Teman", history=[]):
     if best_score >= 70:
         return random.choice([
             best_response,
-            f"{best_response} ",
-            f"{best_response} ya {user} "
+            f"{best_response} 😊",
+            f"{best_response} ya {user} 👍"
         ])
 
-    elif best_score >= 50:
+    elif best_score >= 30:
         return random.choice([
-            f"Maksud kamu tentang ini ya? \n{best_response}",
+            f"Maksud kamu tentang ini ya? 🤔\n{best_response}",
             f"Sepertinya kamu menanyakan ini:\n{best_response}"
         ])
 
     else:
         return random.choice([
-            f"Hmm, aku kurang paham nih {user} Bisa dijelaskan lebih detail?",
-            f"Maksud kamu gimana ya {user}? Coba ceritain lebih lengkap",
-            f"Aku belum nangkep maksudnya nih Kamu lagi pakai platform apa? (Google Classroom, Quizizz, atau Moodle?)",
+            f"Hmm, aku kurang paham nih {user} 🤔 Bisa dijelaskan lebih detail?",
+            f"Maksud kamu gimana ya {user}? Coba ceritain lebih lengkap 😊",
+            f"Aku belum nangkep maksudnya nih 😅 Kamu lagi pakai platform apa? (Google Classroom, Quizizz, atau Moodle?)",
             f"Bisa diperjelas lagi {user}? Misalnya: 'Cara upload tugas di Google Classroom' 📚",
         ])
 

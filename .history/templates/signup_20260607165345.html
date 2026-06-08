@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nara – Daftar</title>
+<link rel="icon" href="{{ url_for('static', filename='NARA.png') }}" type="image/gif">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          purple:       '#7c6fd4',
+          'purple-dark':'#5b4b8a',
+          pink:         '#c084b8',
+          muted:        '#9d8ec2',
+        },
+        fontFamily: {
+          jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+        },
+      }
+    }
+  }
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="font-jakarta h-screen flex items-center justify-center overflow-hidden bg-gradient">
+
+  <!-- Particles -->
+  <div class="fixed inset-0 pointer-events-none z-0" id="particles"></div>
+
+  <!-- Card -->
+  <div class="relative z-10 flex w-[820px] max-w-[95vw] min-h-[520px] rounded-[28px] overflow-hidden card-shadow slide-up">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel w-[45%] flex flex-col items-center justify-center px-8 py-10 relative overflow-hidden">
+      <div class="float-robot mb-5">
+        <img src="/static/chatbot.gif" alt="Nara" class="w-32 drop-shadow-lg">
+      </div>
+      <h2 class="text-white text-xl font-bold text-center mb-2">Bergabung dengan Nara!</h2>
+      <p class="text-white/75 text-[13px] text-center leading-relaxed">Buat akun dan mulai perjalananmu</p>
+
+      <ul class="list-none mt-5 flex flex-col gap-2.5">
+        <li class="flex items-center gap-2 text-xs text-white/85">
+          <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs flex-shrink-0">💬</span>
+          Chat tanpa batas
+        </li>
+        <li class="flex items-center gap-2 text-xs text-white/85">
+          <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs flex-shrink-0">📚</span>
+          Riwayat tersimpan
+        </li>
+        <li class="flex items-center gap-2 text-xs text-white/85">
+          <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs flex-shrink-0">⚡</span>
+          Respons cepat & akurat
+        </li>
+      </ul>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="flex-1 bg-white/75 backdrop-blur-xl flex flex-col justify-center px-10 py-10">
+
+      <h1 class="text-2xl font-bold text-purple-dark mb-1">Buat Akun Baru</h1>
+      <p class="text-[13px] text-muted mb-6">Isi data diri kamu untuk mulai</p>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert-{{ category }} px-3.5 py-2.5 rounded-xl text-[13px] mb-3.5">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST" action="/signup">
+
+        <!-- Nama Lengkap -->
+        <div class="mb-3.5">
+          <label class="block text-[11px] font-semibold text-muted uppercase tracking-[0.8px] mb-1.5">Nama Lengkap</label>
+          <div class="input-wrap flex items-center bg-purple/[0.06] border border-purple/[0.15] rounded-xl px-3.5 transition focus-within:border-purple/50 focus-within:shadow-input focus-within:bg-white">
+         <span class="text-base mr-2 opacity-50"><i class="fi fi-rr-pencil"></i></span>
+            <input type="text" name="fullname" placeholder="Nama lengkap" required
+              class="flex-1 border-none bg-transparent font-jakarta text-sm text-gray-700 outline-none py-3 placeholder-purple/30">
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div class="mb-3.5">
+          <label class="block text-[11px] font-semibold text-muted uppercase tracking-[0.8px] mb-1.5">Username</label>
+          <div class="input-wrap flex items-center bg-purple/[0.06] border border-purple/[0.15] rounded-xl px-3.5 transition focus-within:border-purple/50 focus-within:shadow-input focus-within:bg-white">
+            <span class="text-base mr-2 opacity-50"><i class="fi fi-rr-user"></i></span>
+            <input type="text" name="username" placeholder="Pilih Username" required
+              class="flex-1 border-none bg-transparent font-jakarta text-sm text-gray-700 outline-none py-3 placeholder-purple/30">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3.5">
+          <label class="block text-[11px] font-semibold text-muted uppercase tracking-[0.8px] mb-1.5">Password</label>
+          <div class="input-wrap flex items-center bg-purple/[0.06] border border-purple/[0.15] rounded-xl px-3.5 transition focus-within:border-purple/50 focus-within:shadow-input focus-within:bg-white">
+            <span class="text-base mr-2 opacity-50"><i class="fi fi-rr-lock"></i></span>
+            <input type="password" name="password" id="pwd" placeholder="Min. 6 karakter" required
+              class="flex-1 border-none bg-transparent font-jakarta text-sm text-gray-700 outline-none py-3 placeholder-purple/30">
+            <button type="button" onclick="togglePwd('pwd','eye-pwd')"
+              class="border-none bg-transparent cursor-pointer p-1 opacity-40 hover:opacity-70 transition text-base">
+              <i id="eye-pwd" class="fi fi-rr-eye"></i>
+            </button>
+          </div>
+          <div class="h-[3px] rounded bg-gray-200 mt-1.5 overflow-hidden">
+            <div id="strengthFill" class="h-full rounded w-0 transition-all duration-300"></div>
+          </div>
+        </div>
+
+        <!-- Konfirmasi Password -->
+        <div class="mb-3.5">
+          <label class="block text-[11px] font-semibold text-muted uppercase tracking-[0.8px] mb-1.5">Konfirmasi Password</label>
+          <div class="input-wrap flex items-center bg-purple/[0.06] border border-purple/[0.15] rounded-xl px-3.5 transition focus-within:border-purple/50 focus-within:shadow-input focus-within:bg-white">
+            <span class="text-base mr-2 opacity-50"><i class="fi fi-rr-lock"></i></span>
+            <input type="password" name="confirm_password" id="confirm-pwd" placeholder="Ulangi password" required
+              class="flex-1 border-none bg-transparent font-jakarta text-sm text-gray-700 outline-none py-3 placeholder-purple/30">
+            <button type="button" onclick="togglePwd('confirm-pwd','eye-confirm')"
+              class="border-none bg-transparent cursor-pointer p-1 opacity-40 hover:opacity-70 transition text-base">
+              <i id="eye-confirm" class="fi fi-rr-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Terms -->
+        <label class="flex items-start gap-2 text-xs text-muted my-3.5 cursor-pointer">
+          <input type="checkbox" required class="accent-purple mt-0.5 flex-shrink-0">
+          Saya setuju dengan <a href="#" class="text-purple">Syarat & Ketentuan</a> yang berlaku
+        </label>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-login w-full py-3.5 border-none rounded-2xl text-white text-[15px] font-semibold cursor-pointer font-jakarta">
+          Daftar Sekarang →
+        </button>
+
+      </form>
+
+      <p class="text-center mt-4 text-[13px] text-muted">
+        Sudah punya akun? <a href="/login" class="text-purple font-semibold hover:underline">Masuk di sini</a>
+      </p>
+
+    </div>
+  </div>
+
+  <script>
+  function togglePwd(inputId, iconId){
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    if(input.type === 'password'){
+      input.type = 'text';
+      icon.className = 'fi fi-rr-eye-crossed';
+    } else {
+      input.type = 'password';
+      icon.className = 'fi fi-rr-eye';
+    }
+  }
+
+  // Password strength
+  document.getElementById('pwd').addEventListener('input', function(){
+    const val = this.value;
+    const fill = document.getElementById('strengthFill');
+    let strength = 0;
+    if(val.length >= 6) strength++;
+    if(val.length >= 10) strength++;
+    if(/[A-Z]/.test(val)) strength++;
+    if(/[0-9]/.test(val)) strength++;
+    if(/[^A-Za-z0-9]/.test(val)) strength++;
+    const colors = ['#ef4444','#f97316','#eab308','#22c55e','#10b981'];
+    const widths = ['20%','40%','60%','80%','100%'];
+    fill.style.width  = val ? widths[Math.min(strength-1,4)] : '0%';
+    fill.style.background = val ? colors[Math.min(strength-1,4)] : '';
+  });
+
+  // Particles
+  const pc = document.getElementById('particles');
+  for(let i = 0; i < 14; i++){
+    const p = document.createElement('div');
+    p.className = 'particle absolute rounded-full';
+    const size = Math.random() * 10 + 4;
+    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*8+6}s;animation-delay:${Math.random()*8}s;`;
+    pc.appendChild(p);
+  }
+  </script>
+
+</body>
+</html>

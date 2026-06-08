@@ -24,15 +24,6 @@
   }
 </script>
 <link rel="stylesheet" href="style.css">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  @media (max-width: 768px) {
-    .landing-title  { font-size: 1.75rem !important; }
-    .landing-sub    { font-size: 0.875rem !important; }
-    .landing-img    { width: 9rem !important; }
-    .landing-btn    { padding: 0.85rem 2rem !important; font-size: 0.95rem !important; }
-  }
-</style>
 </head>
 
 <body class="font-jakarta h-screen flex justify-center items-center overflow-hidden bg-landing">
@@ -41,24 +32,24 @@
   <div class="fixed inset-0 pointer-events-none z-0" id="particles"></div>
 
   <!-- Container -->
-  <div class="relative z-10 text-center flex flex-col items-center px-4">
+  <div class="relative z-10 text-center flex flex-col items-center">
 
-    <h1 class="landing-title text-4xl font-bold text-dark tracking-wide mb-2.5 slide-up" style="animation-delay:0.2s">
+    <h1 class="text-4xl font-bold text-dark tracking-wide mb-2.5 slide-up" style="animation-delay:0.2s">
       Meet your Nara
     </h1>
 
-    <p class="landing-sub text-muted text-base mb-2.5 slide-up" style="animation-delay:0.4s">
+    <p class="text-muted text-base mb-2.5 slide-up" style="animation-delay:0.4s">
       Your Virtual Companion, ready to help ✦
     </p>
 
     <div class="slide-up" style="animation-delay:0.6s">
       <img src="/static/chatbot.gif"
-        class="landing-img w-48 my-5 float-robot drop-shadow-purple">
+        class="w-48 my-5 float-robot drop-shadow-purple">
     </div>
 
     <div class="slide-up" style="animation-delay:0.9s">
       <button onclick="startChat()"
-        class="landing-btn mt-2.5 px-10 py-4 rounded-full text-white font-semibold text-base tracking-wide cursor-pointer btn-glow shimmer-btn">
+        class="mt-2.5 px-10 py-4 rounded-full text-white font-semibold text-base tracking-wide cursor-pointer btn-glow shimmer-btn">
         Let's get started
       </button>
     </div>

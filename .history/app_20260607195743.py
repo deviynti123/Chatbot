@@ -2,9 +2,9 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 import sqlite3
 import re
 import random
+import requests
 from rapidfuzz import fuzz
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -14,34 +14,17 @@ factory = StemmerFactory()
 stemmer = factory.create_stemmer()
 
 # =========================
-# STOPWORD REMOVAL (Poin 4)
-# Custom: kata penting untuk chatbot dipertahankan
+# KONFIGURASI AI FALLBACK
+# Ganti dengan API key kamu
 # =========================
-stop_factory = StopWordRemoverFactory()
-# Buat custom stopword: ambil default lalu hapus kata yang penting untuk chatbot
-DEFAULT_STOPWORDS = set(stop_factory.get_stop_words())
-
-# Kata-kata yang TIDAK boleh dihapus meskipun masuk stopword
-KATA_PENTING = {
-    "tidak", "bisa", "belum", "sudah", "mau", "ingin", "mana",
-    "apa", "siapa", "mengapa", "bagaimana", "kapan", "dimana",
-    "cara", "buat", "bisa", "mau", "perlu", "harus", "boleh",
-    "ada", "tidak ada", "lupa", "bantu", "coba", "tanya",
-    "masalah", "gagal", "berhasil", "muncul", "hilang", "salah"
-}
-
-CUSTOM_STOPWORDS = DEFAULT_STOPWORDS - KATA_PENTING
-
-def remove_stopwords(text):
-    """Hapus stopword dari teks, kecuali kata-kata penting untuk chatbot."""
-    words = text.split()
-    filtered = [w for w in words if w not in CUSTOM_STOPWORDS]
-    return " ".join(filtered)
+GEMINI_API_KEY = "ISI_API_KEY_GEMINI_KAMU_DI_SINI"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
 # =========================
 # SINONIM / NORMALISASI KATA
 # =========================
 SINONIM = {
+    # Typo & singkatan umum
     "gabisa": "tidak bisa",
     "gbs": "tidak bisa",
     "ga bisa": "tidak bisa",
@@ -114,16 +97,19 @@ SINONIM = {
 
 def normalize(text):
     text = text.lower().strip()
+    # Ganti sinonim kata per kata
     words = text.split()
     result = []
     i = 0
     while i < len(words):
+        # Coba dua kata dulu (bigram)
         if i + 1 < len(words):
             bigram = words[i] + " " + words[i+1]
             if bigram in SINONIM:
                 result.append(SINONIM[bigram])
                 i += 2
                 continue
+        # Satu kata
         word = words[i]
         result.append(SINONIM.get(word, word))
         i += 1
@@ -166,20 +152,11 @@ def init_db():
 
 # =========================
 # NLP PREPROCESS
-# Pipeline lengkap:
-# 1. Case Folding      → normalize() → .lower()
-# 2. Normalisasi Slang → normalize() → SINONIM dict
-# 3. Hapus Tanda Baca  → re.sub(r'[^\w\s]', '', text)
-# 4. Hapus Whitespace  → re.sub(r'\s+', ' ', text)
-# 5. Stopword Removal  → remove_stopwords()
-# 6. Stemming          → stemmer.stem()
 # =========================
-
 def preprocess(text):
-    text = normalize(text)
+    text = normalize(text)           # normalisasi sinonim dulu
     text = re.sub(r'[^\w\s]', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
-    text = remove_stopwords(text)
     text = stemmer.stem(text)
     return text
 
@@ -197,9 +174,35 @@ def detect_platform(text):
     return None
 
 # =========================
+# FALLBACK KE GEMINI AI
+# =========================
+def ask_gemini(user_input, user="Teman"):
+    try:
+        system_context = """Kamu adalah Nara, asisten digital yang membantu guru SD 
+        dalam menggunakan platform pembelajaran seperti Google Classroom, Quizizz, dan Moodle.
+        Jawab dengan ramah, singkat, dan dalam bahasa Indonesia. 
+        Jika pertanyaan di luar topik platform pembelajaran, tetap bantu semampu kamu tapi 
+        arahkan kembali ke topik platform pembelajaran SD.
+        Panggil user dengan nama mereka jika disebutkan."""
+
+        payload = {
+            "contents": [{
+                "parts": [{
+                    "text": f"{system_context}\n\nUser ({user}): {user_input}"
+                }]
+            }]
+        }
+        res = requests.post(GEMINI_URL, json=payload, timeout=8)
+        data = res.json()
+        answer = data["candidates"][0]["content"]["parts"][0]["text"]
+        return answer.strip()
+    except Exception:
+        return None
+
+# =========================
 # CHATBOT RESPONSE SYSTEM
 # =========================
-def get_response(user_input, user="Teman", history=[]):
+def get_response(user_input, user="Teman"):
     conn = sqlite3.connect("chatbot.db")
     cursor = conn.cursor()
 
@@ -250,11 +253,12 @@ def get_response(user_input, user="Teman", history=[]):
 
     for pattern, response, tag in data:
         processed_pattern = preprocess(pattern)
-        
+
+        # Gabungkan beberapa scoring untuk fleksibilitas
+        score_token  = fuzz.token_set_ratio(processed_input, processed_pattern)
         score_partial = fuzz.partial_ratio(processed_input, processed_pattern)
-        score_sort    = fuzz.token_sort_ratio(processed_input, processed_pattern)
-        score_ratio   = fuzz.ratio(processed_input, processed_pattern)
-        score = (0.5 * score_partial) + (0.3 * score_sort) + (0.2 * score_ratio)
+        score_sort   = fuzz.token_sort_ratio(processed_input, processed_pattern)
+        score = max(score_token, score_partial, score_sort)
 
         if platform:
             tag_lower = tag.lower()
@@ -272,24 +276,31 @@ def get_response(user_input, user="Teman", history=[]):
 
     conn.close()
 
-    if best_score >= 70:
+    # Threshold diturunkan: 60 (sebelumnya 70) dan 40 (sebelumnya 50)
+    if best_score >= 60:
         return random.choice([
             best_response,
-            f"{best_response} ",
-            f"{best_response} ya {user} "
+            f"{best_response} 😊",
+            f"{best_response} ya {user} 👍"
         ])
 
-    elif best_score >= 50:
+    elif best_score >= 40:
         return random.choice([
-            f"Maksud kamu tentang ini ya? \n{best_response}",
+            f"Maksud kamu tentang ini ya? 🤔\n{best_response}",
             f"Sepertinya kamu menanyakan ini:\n{best_response}"
         ])
 
     else:
+        # ── FALLBACK CERDAS: coba Gemini dulu ──
+        ai_response = ask_gemini(user_input, user)
+        if ai_response:
+            return ai_response
+
+        # ── Fallback akhir: tanya balik user ──
         return random.choice([
-            f"Hmm, aku kurang paham nih {user} Bisa dijelaskan lebih detail?",
-            f"Maksud kamu gimana ya {user}? Coba ceritain lebih lengkap",
-            f"Aku belum nangkep maksudnya nih Kamu lagi pakai platform apa? (Google Classroom, Quizizz, atau Moodle?)",
+            f"Hmm, aku kurang paham nih {user} 🤔 Bisa dijelaskan lebih detail?",
+            f"Maksud kamu gimana ya {user}? Coba ceritain lebih lengkap 😊",
+            f"Aku belum nangkep maksudnya nih 😅 Kamu lagi pakai platform apa? (Google Classroom, Quizizz, atau Moodle?)",
             f"Bisa diperjelas lagi {user}? Misalnya: 'Cara upload tugas di Google Classroom' 📚",
         ])
 
@@ -395,38 +406,21 @@ def chat_api():
     user_input = request.json["message"]
     user    = session.get("user", "Teman")
     user_id = session.get("user_id", 0)
-    room_id = session.get("room_id")
-
+    response = get_response(user_input, user)
+    room_id  = session.get("room_id")
     conn = sqlite3.connect("chatbot.db")
     cursor = conn.cursor()
-
-    # Buat room baru jika belum ada
     if room_id is None:
         cursor.execute("INSERT INTO chat_rooms (user_id, title) VALUES (?, ?)", (user_id, "New Chat"))
         room_id = cursor.lastrowid
         session["room_id"] = room_id
-
-    # Ambil 4 pesan terakhir sebagai history konteks (2 pasang tanya-jawab)
-    cursor.execute(
-        "SELECT sender, message FROM messages WHERE room_id=? ORDER BY id DESC LIMIT 4",
-        (room_id,)
-    )
-    history = cursor.fetchall()[::-1]  # balik jadi urutan ASC
-
-    # Dapatkan respons
-    response = get_response(user_input, user, history)
-
-    # Simpan pesan ke database
     cursor.execute("INSERT INTO messages (room_id, sender, message) VALUES (?, ?, ?)", (room_id, "user", user_input))
     cursor.execute("INSERT INTO messages (room_id, sender, message) VALUES (?, ?, ?)", (room_id, "bot", response))
-
-    # Update judul room jika pesan pertama
     cursor.execute("SELECT COUNT(*) FROM messages WHERE room_id=?", (room_id,))
     count = cursor.fetchone()[0]
     if count <= 2:
         title = user_input[:30] + ("..." if len(user_input) > 30 else "")
         cursor.execute("UPDATE chat_rooms SET title=? WHERE id=?", (title, room_id))
-
     conn.commit()
     conn.close()
     return jsonify({"response": response})

@@ -26,40 +26,6 @@
   }
 </script>
 <link rel="stylesheet" href="style.css">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  .slider-track {
-    display: flex;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    width: 300%;
-  }
-  .slide-item {
-    width: calc(100% / 3);
-    flex-shrink: 0;
-    text-align: center;
-    padding: 0 4px;
-  }
-  .slider-wrapper {
-    overflow: hidden;
-    width: 100%;
-  }
-
-  /* ── MOBILE RESPONSIVE ── */
-  @media (max-width: 768px) {
-    .left-panel {
-      display: none !important;
-    }
-    .right-panel {
-      padding: 2.5rem 1.75rem !important;
-      border-radius: 28px !important;
-    }
-    .main-card {
-      width: 92vw !important;
-      min-height: unset !important;
-      border-radius: 28px !important;
-    }
-  }
-</style>
 </head>
 
 <body class="font-jakarta h-screen flex items-center justify-center overflow-hidden bg-gradient">
@@ -68,49 +34,29 @@
   <div class="fixed inset-0 pointer-events-none z-0" id="particles"></div>
 
   <!-- Card -->
-  <div class="main-card relative z-10 flex w-[820px] max-w-[95vw] min-h-[480px] rounded-[28px] overflow-hidden card-shadow slide-up">
+  <div class="relative z-10 flex w-[820px] max-w-[95vw] min-h-[480px] rounded-[28px] overflow-hidden card-shadow slide-up">
 
     <!-- LEFT PANEL -->
     <div class="left-panel w-[45%] flex flex-col items-center justify-center px-8 py-10 relative overflow-hidden">
-
-      <!-- Gambar tetap -->
       <div class="float-robot mb-5">
         <img src="/static/chatbot.gif" alt="Nara" class="w-36 drop-shadow-lg">
       </div>
-
-      <!-- Slider teks -->
-      <div class="slider-wrapper">
-        <div class="slider-track" id="sliderTrack">
-          <div class="slide-item">
-            <h2 class="text-white text-[22px] font-bold mb-2">Halo, aku Nara!</h2>
-            <p class="text-white/75 text-[13px] leading-relaxed">Asisten pintarmu yang siap<br>membantu kapan saja</p>
-          </div>
-          <div class="slide-item">
-            <h2 class="text-white text-[22px] font-bold mb-2">Chat Tanpa Batas</h2>
-            <p class="text-white/75 text-[13px] leading-relaxed">Tanya apa saja, Nara siap<br>menjawab 24/7</p>
-          </div>
-          <div class="slide-item">
-            <h2 class="text-white text-[22px] font-bold mb-2">Respons Cepat</h2>
-            <p class="text-white/75 text-[13px] leading-relaxed">Jawaban akurat dan cepat<br>langsung di ujung jarimu</p>
-          </div>
-        </div>
+      <h2 class="text-white text-[22px] font-bold text-center mb-2">Halo, aku Nara!</h2>
+      <p class="text-white/75 text-[13px] text-center leading-relaxed">Asisten pintarmu yang siap<br>membantu kapan saja</p>
+      <div class="flex gap-1.5 mt-6">
+        <span class="w-5 h-2 rounded bg-white"></span>
+        <span class="w-2 h-2 rounded-full bg-white/40"></span>
+        <span class="w-2 h-2 rounded-full bg-white/40"></span>
       </div>
-
-      <!-- Dots -->
-      <div class="flex gap-2 mt-6" id="dots">
-        <span class="dot w-2.5 h-2.5 rounded-full bg-white cursor-pointer transition-all duration-300"></span>
-        <span class="dot w-2.5 h-2.5 rounded-full bg-white/40 cursor-pointer transition-all duration-300"></span>
-        <span class="dot w-2.5 h-2.5 rounded-full bg-white/40 cursor-pointer transition-all duration-300"></span>
-      </div>
-
     </div>
 
     <!-- RIGHT PANEL -->
-    <div class="right-panel flex-1 bg-white/75 backdrop-blur-xl flex flex-col justify-center px-10 py-12">
+    <div class="flex-1 bg-white/75 backdrop-blur-xl flex flex-col justify-center px-10 py-12">
 
       <h1 class="text-[26px] font-bold text-purple-dark mb-1.5">Selamat Datang!</h1>
       <p class="text-[13px] text-muted mb-8">Masuk untuk mulai ngobrol dengan Nara</p>
 
+      <!-- Flash messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
           <div class="alert-{{ category }} px-3.5 py-2.5 rounded-xl text-[13px] mb-4">{{ message }}</div>
@@ -119,6 +65,7 @@
 
       <form method="POST" action="/login">
 
+        <!-- Username -->
         <div class="mb-4">
           <label class="block text-[11px] font-semibold text-muted uppercase tracking-[0.8px] mb-1.5">Username</label>
           <div class="input-wrap flex items-center bg-purple/[0.06] border border-purple/[0.15] rounded-xl px-3.5 transition focus-within:border-purple/50 focus-within:shadow-input focus-within:bg-white">
@@ -128,19 +75,21 @@
           </div>
         </div>
 
+        <!-- Password -->
         <div class="mb-4">
           <label class="block text-[11px] font-semibold text-muted uppercase tracking-[0.8px] mb-1.5">Password</label>
           <div class="input-wrap flex items-center bg-purple/[0.06] border border-purple/[0.15] rounded-xl px-3.5 transition focus-within:border-purple/50 focus-within:shadow-input focus-within:bg-white">
-            <span class="text-base mr-2 opacity-15"><i class="fi fi-rr-lock"></i></span>
+            <span class="text-base mr-2 opacity-50"><i class="fi fi-rr-lock"></i></span>
             <input type="password" name="password" id="login-pwd" placeholder="Masukkan password" required
               class="flex-1 border-none bg-transparent font-jakarta text-sm text-gray-700 outline-none py-3 placeholder-purple/30">
             <button type="button" onclick="togglePwd('login-pwd','login-eye')"
-              class="border-none bg-transparent cursor-pointer p-1 opacity-30 hover:opacity-70 transition text-base">
+              class="border-none bg-transparent cursor-pointer p-1 opacity-40 hover:opacity-70 transition text-base">
               <i id="login-eye" class="fi fi-rr-eye"></i>
             </button>
           </div>
         </div>
 
+        <!-- Remember & Forgot -->
         <div class="flex justify-between items-center mb-6">
           <label class="flex items-center gap-1.5 text-xs text-muted cursor-pointer">
             <input type="checkbox" name="remember" class="accent-purple"> Ingat saya
@@ -148,6 +97,7 @@
           <a href="/forgot_password" class="text-xs text-purple font-medium hover:underline">Lupa password?</a>
         </div>
 
+        <!-- Submit -->
         <button type="submit" class="btn-login w-full py-3.5 border-none rounded-2xl text-white text-[15px] font-semibold cursor-pointer font-jakarta">
           Masuk →
         </button>
@@ -174,7 +124,6 @@
     }
   }
 
-  // Particles
   const pc = document.getElementById('particles');
   for(let i = 0; i < 14; i++){
     const p = document.createElement('div');
@@ -183,38 +132,6 @@
     p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*8+6}s;animation-delay:${Math.random()*8}s;`;
     pc.appendChild(p);
   }
-
-  // Slider
-  const track = document.getElementById('sliderTrack');
-  const dots  = document.querySelectorAll('.dot');
-  const total = dots.length;
-  let current = 0;
-  let timer;
-
-  function goTo(index) {
-    dots[current].classList.remove('bg-white');
-    dots[current].classList.add('bg-white/40');
-
-    current = index;
-    track.style.transform = `translateX(-${current * (100 / total)}%)`;
-
-    dots[current].classList.remove('bg-white/40');
-    dots[current].classList.add('bg-white');
-  }
-
-  function nextSlide() {
-    goTo((current + 1) % total);
-  }
-
-  dots.forEach((dot, i) => {
-    dot.addEventListener('click', () => {
-      clearInterval(timer);
-      goTo(i);
-      timer = setInterval(nextSlide, 3000);
-    });
-  });
-
-  timer = setInterval(nextSlide, 3000);
   </script>
 
 </body>

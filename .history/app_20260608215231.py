@@ -279,7 +279,7 @@ def get_response(user_input, user="Teman", history=[]):
             f"{best_response} ya {user} "
         ])
 
-    elif best_score >= 50:
+    elif best_score >= 30:
         return random.choice([
             f"Maksud kamu tentang ini ya? \n{best_response}",
             f"Sepertinya kamu menanyakan ini:\n{best_response}"

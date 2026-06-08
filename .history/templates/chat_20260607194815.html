@@ -5,7 +5,6 @@
 <link rel="icon" href="{{ url_for('static', filename='NARA.png') }}" type="image/gif">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -44,50 +43,6 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
     max-width: 320px; width: 90%; text-align: center;
   }
-
-  /* ── Typing indicator dots animation ── */
-  @keyframes typingBounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-    30%            { transform: translateY(-6px); opacity: 1; }
-  }
-  .typing-dot {
-    display: inline-block;
-    animation: typingBounce 1.2s infinite ease-in-out;
-  }
-
-  /* ── MOBILE RESPONSIVE ── */
-  @media (max-width: 768px) {
-    .sidebar {
-      position: fixed !important;
-      left: -100% !important;
-      top: 0 !important;
-      height: 100% !important;
-      width: 75% !important;
-      min-width: unset !important;
-      transition: left 0.3s ease;
-      z-index: 100 !important;
-    }
-    .sidebar.open {
-      left: 0 !important;
-    }
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      z-index: 99;
-    }
-    .sidebar-overlay.show {
-      display: block;
-    }
-    .hamburger-btn {
-      display: flex !important;
-    }
-    /* delete btn selalu tampil di mobile (tidak perlu hover) */
-    .delete-btn {
-      opacity: 1 !important;
-    }
-  }
 </style>
 </head>
 <body class="font-jakarta h-screen flex overflow-hidden bg-gradient">
@@ -95,15 +50,12 @@
 <!-- Particles -->
 <div class="particles fixed inset-0 pointer-events-none z-0" id="particles"></div>
 
-<!-- Sidebar Overlay (mobile) -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
 <!-- Sidebar -->
-<div class="w-70 sidebar flex flex-col gap-4 p-5 z-10">
+<div class="w-70 min-w-70 sidebar flex flex-col gap-4 p-5 z-10">
 
   <!-- Profile Card -->
   <div class="flex gap-3 items-center p-3.5 rounded-2xl bg-white/60">
-    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white grad-purple text-sm"><i class="fi fi-sr-user" style="line-height:1"></i></div>
+    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white grad-purple text-sm">👤</div>
     <div>
       <div class="font-bold text-dark">{{ user }}</div>
       {% if user == "Guest" %}
@@ -131,15 +83,10 @@
 
   <!-- Header -->
   <div class="flex items-center gap-3 px-7 py-4 bg-white/40 border-b border-purple/10">
-    <!-- Tombol Hamburger (hanya tampil di mobile) -->
-    <button class="hamburger-btn hidden items-center justify-center w-9 h-9 rounded-xl bg-purple/10 border-none cursor-pointer flex-shrink-0"
-      onclick="toggleSidebar()">
-      ☰
-    </button>
-    <div class="w-10 h-10 rounded-full grad-purple p-1.5 flex-shrink-0"><img src="{{ url_for('static', filename='chatbot 4.png') }}" class="w-full h-full object-contain"></div>
+    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white grad-purple">🤖</div>
     <div>
       <div class="text-base font-bold text-dark">Nara</div>
-      <div class="text-xs text-muted" id="statusText">Online</div>
+      <div class="text-xs text-muted">Online</div>
     </div>
   </div>
 
@@ -154,7 +101,7 @@
       Asisten digital untuk membantu penggunaan platform pembelajaran SD.
     </div>
 
-    <div class="w-full max-w-lg flex flex-col gap-3.5 mt-1.5 px-4">
+    <div class="w-full max-w-lg flex flex-col gap-3.5 mt-1.5">
       <div onclick="chooseMenu('platform')" class="role-card flex items-center gap-4 bg-white/75 border border-purple/10 rounded-3xl p-4 cursor-pointer shadow-sm transition hover:-translate-y-1 hover:scale-102 hover:bg-white hover:border-purple/20">
         <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl role-icon">📚</div>
         <div>
@@ -179,8 +126,8 @@
   <!-- Chat Messages -->
   <div id="messages" class="flex-1 overflow-y-auto p-6 flex flex-col gap-3">
     <div class="typing-indicator hidden gap-2 items-end" id="typing">
-      <div class="w-8 h-8 rounded-full grad-purple p-1 flex items-center justify-center flex-shrink-0"><img src="{{ url_for('static', filename='chatbot 4.png') }}" class="w-full h-full object-contain"></div>
-      <div class="bg-white px-4 py-3.5 rounded-2xl flex gap-1.5 items-center">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple">🤖</div>
+      <div class="bg-white px-4 py-3.5 rounded-2xl flex gap-1.5">
         <span class="typing-dot w-2 h-2 rounded-full bg-muted"></span>
         <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.2s"></span>
         <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.4s"></span>
@@ -193,7 +140,7 @@
     <div class="bg-white rounded-2xl p-2 flex gap-2.5">
       <input id="input" placeholder="Ketik pesan ke Nara..."
         class="flex-1 border-none outline-none px-2.5 py-2.5 text-sm font-jakarta">
-      <button onclick="sendMessage()" id="sendBtn"
+      <button onclick="sendMessage()"
         class="w-11 h-11 border-none rounded-xl cursor-pointer text-white grad-purple flex items-center justify-center">
         ➤
       </button>
@@ -224,45 +171,11 @@
 <script>
 
 let roomToDelete = null;
-let isSending = false;
 
 window.onload = function(){
   loadMessages();
   loadRooms();
 };
-
-// ── MOBILE: Toggle Sidebar ──
-function toggleSidebar(){
-  document.querySelector('.sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('show');
-}
-
-function setTyping(show) {
-  const typing = document.getElementById("typing");
-  const statusText = document.getElementById("statusText");
-  const sendBtn = document.getElementById("sendBtn");
-  const input = document.getElementById("input");
-
-  if (show) {
-    typing.classList.remove("hidden");
-    typing.classList.add("flex");
-    statusText.textContent = "Nara sedang mengetik...";
-    sendBtn.disabled = true;
-    sendBtn.style.opacity = "0.5";
-    input.disabled = true;
-    isSending = true;
-  } else {
-    typing.classList.add("hidden");
-    typing.classList.remove("flex");
-    statusText.textContent = "Online";
-    sendBtn.disabled = false;
-    sendBtn.style.opacity = "1";
-    input.disabled = false;
-    isSending = false;
-    input.focus();
-  }
-  scrollBottom();
-}
 
 function clearSuggestions(){
   document.querySelectorAll(".suggestion-wrap").forEach(el => el.remove());
@@ -355,7 +268,7 @@ function addBotMsg(text){
   let row = document.createElement("div");
   row.className = "msg-row flex gap-2 items-end fade-in";
   row.innerHTML = `
-    <div class="w-8 h-8 rounded-full grad-purple p-1 flex items-center justify-center flex-shrink-0"><img src="/static/chatbot 4.png" class="w-full h-full object-contain"></div>
+    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple flex-shrink-0">🤖</div>
     <div class="msg-bot max-w-[65%] px-4 py-3 rounded-2xl rounded-bl bg-white text-gray-700 leading-relaxed text-sm">${text}</div>
   `;
   box.insertBefore(row, typing);
@@ -369,7 +282,7 @@ function addUserMsg(text){
   row.className = "msg-row flex gap-2 items-end justify-end fade-in";
   row.innerHTML = `
     <div class="max-w-[65%] px-4 py-3 rounded-2xl rounded-br text-white grad-purple leading-relaxed text-sm">${text}</div>
-    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple flex-shrink-0"><i class="fi fi-sr-user" style="line-height:1"></i></div>
+    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple flex-shrink-0">👤</div>
   `;
   box.insertBefore(row, typing);
   scrollBottom();
@@ -409,18 +322,14 @@ function loadRooms(){
 }
 
 function openRoom(roomId){
-  // Tutup sidebar setelah pilih room di mobile
-  document.querySelector('.sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('show');
-
   fetch(`/load_room/${roomId}`)
   .then(res => res.json())
   .then(data => {
     let box = document.getElementById("messages");
     box.innerHTML = `
       <div class="typing-indicator hidden gap-2 items-end" id="typing">
-        <div class="w-8 h-8 rounded-full grad-purple p-1 flex items-center justify-center flex-shrink-0"><img src="{{ url_for('static', filename='chatbot 4.png') }}" class="w-full h-full object-contain"></div>
-        <div class="bg-white px-4 py-3.5 rounded-2xl flex gap-1.5 items-center">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple">🤖</div>
+        <div class="bg-white px-4 py-3.5 rounded-2xl flex gap-1.5">
           <span class="typing-dot w-2 h-2 rounded-full bg-muted"></span>
           <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.2s"></span>
           <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.4s"></span>
@@ -452,10 +361,11 @@ function confirmDelete(){
   .then(data => {
     closeConfirm();
     loadRooms();
+    // Kalau room yang sedang dibuka dihapus, kembali ke splash
     document.getElementById("messages").innerHTML = `
       <div class="typing-indicator hidden gap-2 items-end" id="typing">
-        <div class="w-8 h-8 rounded-full grad-purple p-1 flex items-center justify-center flex-shrink-0"><img src="{{ url_for('static', filename='chatbot 4.png') }}" class="w-full h-full object-contain"></div>
-        <div class="bg-white px-4 py-3.5 rounded-2xl flex gap-1.5 items-center">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple">🤖</div>
+        <div class="bg-white px-4 py-3.5 rounded-2xl flex gap-1.5">
           <span class="typing-dot w-2 h-2 rounded-full bg-muted"></span>
           <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.2s"></span>
           <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.4s"></span>
@@ -471,17 +381,16 @@ function confirmDelete(){
 }
 
 function sendMessage(){
-  if(isSending) return;
   let input = document.getElementById("input");
-  let text = input.value.trim();
-  if(text === "") return;
+  let text = input.value;
+  if(text.trim() === "") return;
   document.getElementById("splash").style.display = "none";
   clearSuggestions();
   addUserMsg(text);
   input.value = "";
-
-  setTyping(true);  // tampilkan typing + ubah status + disable input
-
+  const typing = document.getElementById("typing");
+  typing.classList.remove("hidden");
+  typing.classList.add("flex");
   fetch("/chat_api",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
@@ -489,13 +398,9 @@ function sendMessage(){
   })
   .then(res => res.json())
   .then(data => {
-    setTyping(false);  // sembunyikan typing + kembalikan status
+    typing.classList.add("hidden");
+    typing.classList.remove("flex");
     addBotMsg(data.response);
-    loadRooms();
-  })
-  .catch(() => {
-    setTyping(false);
-    addBotMsg("Maaf, ada gangguan koneksi. Coba lagi ya 😅");
   });
 }
 

@@ -4,7 +4,6 @@ import re
 import random
 from rapidfuzz import fuzz
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -14,127 +13,12 @@ factory = StemmerFactory()
 stemmer = factory.create_stemmer()
 
 # =========================
-# STOPWORD REMOVAL (Poin 4)
-# Custom: kata penting untuk chatbot dipertahankan
-# =========================
-stop_factory = StopWordRemoverFactory()
-# Buat custom stopword: ambil default lalu hapus kata yang penting untuk chatbot
-DEFAULT_STOPWORDS = set(stop_factory.get_stop_words())
-
-# Kata-kata yang TIDAK boleh dihapus meskipun masuk stopword
-KATA_PENTING = {
-    "tidak", "bisa", "belum", "sudah", "mau", "ingin", "mana",
-    "apa", "siapa", "mengapa", "bagaimana", "kapan", "dimana",
-    "cara", "buat", "bisa", "mau", "perlu", "harus", "boleh",
-    "ada", "tidak ada", "lupa", "bantu", "coba", "tanya",
-    "masalah", "gagal", "berhasil", "muncul", "hilang", "salah"
-}
-
-CUSTOM_STOPWORDS = DEFAULT_STOPWORDS - KATA_PENTING
-
-def remove_stopwords(text):
-    """Hapus stopword dari teks, kecuali kata-kata penting untuk chatbot."""
-    words = text.split()
-    filtered = [w for w in words if w not in CUSTOM_STOPWORDS]
-    return " ".join(filtered)
-
-# =========================
-# SINONIM / NORMALISASI KATA
-# =========================
-SINONIM = {
-    "gabisa": "tidak bisa",
-    "gbs": "tidak bisa",
-    "ga bisa": "tidak bisa",
-    "gak bisa": "tidak bisa",
-    "ngak bisa": "tidak bisa",
-    "tdk bisa": "tidak bisa",
-    "ga": "tidak",
-    "gak": "tidak",
-    "ngak": "tidak",
-    "nggak": "tidak",
-    "enggak": "tidak",
-    "udah": "sudah",
-    "udh": "sudah",
-    "blm": "belum",
-    "blum": "belum",
-    "gimana": "bagaimana",
-    "gmn": "bagaimana",
-    "gmana": "bagaimana",
-    "kenapa": "mengapa",
-    "knp": "mengapa",
-    "krn": "karena",
-    "karna": "karena",
-    "buat": "untuk",
-    "utk": "untuk",
-    "trus": "lalu",
-    "terus": "lalu",
-    "abis": "setelah",
-    "habis": "setelah",
-    "mau": "ingin",
-    "pengen": "ingin",
-    "pgn": "ingin",
-    "coba": "mencoba",
-    "nyoba": "mencoba",
-    "lupa": "tidak ingat",
-    "error": "masalah",
-    "eror": "masalah",
-    "lemot": "lambat",
-    "loading": "memuat",
-    "login": "masuk",
-    "log in": "masuk",
-    "logout": "keluar",
-    "upload": "unggah",
-    "uplod": "unggah",
-    "download": "unduh",
-    "password": "sandi",
-    "pass": "sandi",
-    "pw": "sandi",
-    "akun": "akun",
-    "acc": "akun",
-    "classroom": "google classroom",
-    "gc": "google classroom",
-    "gclassroom": "google classroom",
-    "quiziz": "quizizz",
-    "kuis": "quizizz",
-    "moodl": "moodle",
-    "cara": "bagaimana",
-    "steps": "langkah",
-    "step": "langkah",
-    "panduan": "petunjuk",
-    "tutorial": "petunjuk",
-    "tolong": "bantu",
-    "help": "bantu",
-    "bisa bantu": "bantu",
-    "susah": "sulit",
-    "ribet": "sulit",
-    "ngga muncul": "tidak muncul",
-    "ga muncul": "tidak muncul",
-    "hilang": "tidak muncul",
-}
-
-def normalize(text):
-    text = text.lower().strip()
-    words = text.split()
-    result = []
-    i = 0
-    while i < len(words):
-        if i + 1 < len(words):
-            bigram = words[i] + " " + words[i+1]
-            if bigram in SINONIM:
-                result.append(SINONIM[bigram])
-                i += 2
-                continue
-        word = words[i]
-        result.append(SINONIM.get(word, word))
-        i += 1
-    return " ".join(result)
-
-# =========================
 # DATABASE INIT
 # =========================
 def init_db():
     conn = sqlite3.connect("chatbot.db")
     cursor = conn.cursor()
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -144,6 +28,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS chat_rooms (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -152,6 +37,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -161,25 +47,17 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
     conn.commit()
     conn.close()
 
 # =========================
 # NLP PREPROCESS
-# Pipeline lengkap:
-# 1. Case Folding      → normalize() → .lower()
-# 2. Normalisasi Slang → normalize() → SINONIM dict
-# 3. Hapus Tanda Baca  → re.sub(r'[^\w\s]', '', text)
-# 4. Hapus Whitespace  → re.sub(r'\s+', ' ', text)
-# 5. Stopword Removal  → remove_stopwords()
-# 6. Stemming          → stemmer.stem()
 # =========================
-
 def preprocess(text):
-    text = normalize(text)
+    text = text.lower()
     text = re.sub(r'[^\w\s]', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
-    text = remove_stopwords(text)
     text = stemmer.stem(text)
     return text
 
@@ -187,10 +65,10 @@ def preprocess(text):
 # DETEKSI PLATFORM
 # =========================
 def detect_platform(text):
-    text = normalize(text.lower())
+    text = text.lower()
     if any(k in text for k in ["google classroom", "classroom", "gc"]):
         return "google_classroom"
-    elif any(k in text for k in ["quizizz", "quiz", "kuis"]):
+    elif any(k in text for k in ["quizizz", "quiz"]):
         return "quizizz"
     elif "moodle" in text:
         return "moodle"
@@ -199,14 +77,16 @@ def detect_platform(text):
 # =========================
 # CHATBOT RESPONSE SYSTEM
 # =========================
-def get_response(user_input, user="Teman", history=[]):
+def get_response(user_input, user="Teman"):
     conn = sqlite3.connect("chatbot.db")
     cursor = conn.cursor()
 
     processed_input = preprocess(user_input)
 
-    # Rule-based natural responses
-    if any(word in processed_input for word in ["halo", "hai", "hi", "hello"]):
+    # =========================
+    # RULE BASED NATURAL RESPONSE
+    # =========================
+    if any(word in processed_input for word in ["halo", "hai", "hi"]):
         conn.close()
         return random.choice([
             f"Hai {user} 👋 Aku Nara!",
@@ -214,7 +94,7 @@ def get_response(user_input, user="Teman", history=[]):
             f"Hai juga {user}! Mau belajar apa hari ini? 📚"
         ])
 
-    if "nara" in processed_input and len(processed_input.split()) <= 3:
+    if "nara" in processed_input:
         conn.close()
         return random.choice([
             "Iya aku di sini 😊",
@@ -222,7 +102,7 @@ def get_response(user_input, user="Teman", history=[]):
             "Nara siap bantu! 💜"
         ])
 
-    if any(word in processed_input for word in ["terima kasih", "makasih", "thanks"]):
+    if any(word in processed_input for word in ["terima kasih", "makasih"]):
         conn.close()
         return random.choice([
             "Sama-sama 😊",
@@ -230,12 +110,18 @@ def get_response(user_input, user="Teman", history=[]):
             "Kapan-kapan tanya lagi ya ✨"
         ])
 
-    if any(p in processed_input for p in ["siapa kamu", "siapa nara", "kamu siapa"]):
+    if "siapa kamu" in processed_input:
         conn.close()
-        return "Aku Nara 🤖 asisten digital yang siap bantu kamu menggunakan platform pembelajaran seperti Google Classroom, Quizizz, dan Moodle!"
+        return "Aku Nara 🤖 asisten belajarmu!"
 
-    # Intent matching
+    # =========================
+    # DETEKSI PLATFORM DARI INPUT
+    # =========================
     platform = detect_platform(user_input)
+
+    # =========================
+    # INTENT MATCHING + PLATFORM BOOST
+    # =========================
     cursor.execute("SELECT pattern, response, tag FROM intents")
     data = cursor.fetchall()
 
@@ -250,20 +136,18 @@ def get_response(user_input, user="Teman", history=[]):
 
     for pattern, response, tag in data:
         processed_pattern = preprocess(pattern)
-        
-        score_partial = fuzz.partial_ratio(processed_input, processed_pattern)
-        score_sort    = fuzz.token_sort_ratio(processed_input, processed_pattern)
-        score_ratio   = fuzz.ratio(processed_input, processed_pattern)
-        score = (0.5 * score_partial) + (0.3 * score_sort) + (0.2 * score_ratio)
+        score = fuzz.token_set_ratio(processed_input, processed_pattern)
 
         if platform:
             tag_lower = tag.lower()
+            # Bonus kalau platform cocok dengan tag
             if platform in tag_lower:
-                score += 20
+                score += 25
+            # Penalti kalau platform lain ada di tag
             else:
                 for wrong_platform in platform_penalty.get(platform, []):
                     if wrong_platform in tag_lower:
-                        score -= 30
+                        score -= 35
                         break
 
         if score > best_score:
@@ -272,25 +156,28 @@ def get_response(user_input, user="Teman", history=[]):
 
     conn.close()
 
+    # =========================
+    # SMART THRESHOLD
+    # =========================
     if best_score >= 70:
         return random.choice([
             best_response,
-            f"{best_response} ",
-            f"{best_response} ya {user} "
+            f"{best_response} 😊",
+            f"{best_response} ya {user} 👍"
         ])
 
     elif best_score >= 50:
         return random.choice([
-            f"Maksud kamu tentang ini ya? \n{best_response}",
+            f"Maksud kamu tentang ini ya? 🤔\n{best_response}",
             f"Sepertinya kamu menanyakan ini:\n{best_response}"
         ])
 
     else:
         return random.choice([
-            f"Hmm, aku kurang paham nih {user} Bisa dijelaskan lebih detail?",
-            f"Maksud kamu gimana ya {user}? Coba ceritain lebih lengkap",
-            f"Aku belum nangkep maksudnya nih Kamu lagi pakai platform apa? (Google Classroom, Quizizz, atau Moodle?)",
-            f"Bisa diperjelas lagi {user}? Misalnya: 'Cara upload tugas di Google Classroom' 📚",
+            f"Hmm aku belum paham nih {user} 🤔",
+            "Coba jelasin lagi ya 😊",
+            "Aku belum ngerti maksudnya 😅",
+            "Kamu bisa tanya tentang tugas, materi, atau login 📚"
         ])
 
 # =========================
@@ -315,33 +202,45 @@ def chat_page():
 def login():
     if session.get("user"):
         return redirect(url_for("chat_page"))
+
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
+
         if not username or not password:
             flash("Username dan password wajib diisi!", "error")
             return redirect(url_for("login"))
+
         conn = sqlite3.connect("chatbot.db")
         cursor = conn.cursor()
         cursor.execute("SELECT id, username, password FROM users WHERE username=?", (username,))
         user = cursor.fetchone()
         conn.close()
+
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
             session["user"] = user[1]
+
             conn = sqlite3.connect("chatbot.db")
             cursor = conn.cursor()
-            cursor.execute("SELECT id FROM chat_rooms WHERE user_id=? ORDER BY created_at DESC LIMIT 1", (user[0],))
+            cursor.execute("""
+                SELECT id FROM chat_rooms
+                WHERE user_id=?
+                ORDER BY created_at DESC LIMIT 1
+            """, (user[0],))
             last_room = cursor.fetchone()
             conn.close()
+
             if last_room:
                 session["room_id"] = last_room[0]
             else:
                 session.pop("room_id", None)
+
             return redirect(url_for("chat_page"))
         else:
             flash("Username atau password salah!", "error")
             return redirect(url_for("login"))
+
     return render_template("login.html")
 
 # =========================
@@ -351,25 +250,32 @@ def login():
 def signup():
     if session.get("user"):
         return redirect(url_for("chat_page"))
+
     if request.method == "POST":
         fullname = request.form.get("fullname", "").strip()
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-        confirm  = request.form.get("confirm_password", "")
+        confirm = request.form.get("confirm_password", "")
+
         if not fullname or not username or not password:
             flash("Semua field wajib diisi!", "error")
             return redirect(url_for("signup"))
+
         if len(password) < 6:
             flash("Password minimal 6 karakter!", "error")
             return redirect(url_for("signup"))
+
         if password != confirm:
             flash("Password dan konfirmasi tidak cocok!", "error")
             return redirect(url_for("signup"))
+
         hashed = generate_password_hash(password)
+
         try:
             conn = sqlite3.connect("chatbot.db")
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (fullname, username, password) VALUES (?, ?, ?)", (fullname, username, hashed))
+            cursor.execute("INSERT INTO users (fullname, username, password) VALUES (?, ?, ?)",
+                           (fullname, username, hashed))
             conn.commit()
             conn.close()
             flash("Akun berhasil dibuat! Silakan login.", "success")
@@ -377,6 +283,7 @@ def signup():
         except sqlite3.IntegrityError:
             flash("Username sudah dipakai!", "error")
             return redirect(url_for("signup"))
+
     return render_template("signup.html")
 
 # =========================
@@ -393,42 +300,36 @@ def logout():
 @app.route("/chat_api", methods=["POST"])
 def chat_api():
     user_input = request.json["message"]
-    user    = session.get("user", "Teman")
+    user = session.get("user", "Teman")
     user_id = session.get("user_id", 0)
+
+    response = get_response(user_input, user)
+
     room_id = session.get("room_id")
 
     conn = sqlite3.connect("chatbot.db")
     cursor = conn.cursor()
 
-    # Buat room baru jika belum ada
     if room_id is None:
         cursor.execute("INSERT INTO chat_rooms (user_id, title) VALUES (?, ?)", (user_id, "New Chat"))
         room_id = cursor.lastrowid
         session["room_id"] = room_id
 
-    # Ambil 4 pesan terakhir sebagai history konteks (2 pasang tanya-jawab)
-    cursor.execute(
-        "SELECT sender, message FROM messages WHERE room_id=? ORDER BY id DESC LIMIT 4",
-        (room_id,)
-    )
-    history = cursor.fetchall()[::-1]  # balik jadi urutan ASC
+    cursor.execute("INSERT INTO messages (room_id, sender, message) VALUES (?, ?, ?)",
+                   (room_id, "user", user_input))
+    cursor.execute("INSERT INTO messages (room_id, sender, message) VALUES (?, ?, ?)",
+                   (room_id, "bot", response))
 
-    # Dapatkan respons
-    response = get_response(user_input, user, history)
-
-    # Simpan pesan ke database
-    cursor.execute("INSERT INTO messages (room_id, sender, message) VALUES (?, ?, ?)", (room_id, "user", user_input))
-    cursor.execute("INSERT INTO messages (room_id, sender, message) VALUES (?, ?, ?)", (room_id, "bot", response))
-
-    # Update judul room jika pesan pertama
     cursor.execute("SELECT COUNT(*) FROM messages WHERE room_id=?", (room_id,))
     count = cursor.fetchone()[0]
+
     if count <= 2:
         title = user_input[:30] + ("..." if len(user_input) > 30 else "")
         cursor.execute("UPDATE chat_rooms SET title=? WHERE id=?", (title, room_id))
 
     conn.commit()
     conn.close()
+
     return jsonify({"response": response})
 
 # =========================
@@ -476,9 +377,6 @@ def get_rooms():
     conn.close()
     return jsonify(rooms)
 
-# =========================
-# LOAD ROOM
-# =========================
 @app.route("/load_room/<int:room_id>")
 def load_room(room_id):
     session["room_id"] = room_id
@@ -490,35 +388,12 @@ def load_room(room_id):
     return jsonify(data)
 
 # =========================
-# DELETE ROOM
-# =========================
-@app.route("/delete_room/<int:room_id>", methods=["DELETE"])
-def delete_room(room_id):
-    user_id = session.get("user_id")
-    if not user_id:
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
-    conn = sqlite3.connect("chatbot.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id FROM chat_rooms WHERE id=? AND user_id=?", (room_id, user_id))
-    room = cursor.fetchone()
-    if not room:
-        conn.close()
-        return jsonify({"status": "error", "message": "Room tidak ditemukan"}), 404
-    cursor.execute("DELETE FROM messages WHERE room_id=?", (room_id,))
-    cursor.execute("DELETE FROM chat_rooms WHERE id=?", (room_id,))
-    conn.commit()
-    conn.close()
-    if session.get("room_id") == room_id:
-        session.pop("room_id", None)
-    return jsonify({"status": "ok"})
-
-# =========================
 # FORGOT PASSWORD
 # =========================
 @app.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
     if request.method == "POST":
-        username     = request.form["username"]
+        username = request.form["username"]
         new_password = generate_password_hash(request.form["password"])
         conn = sqlite3.connect("chatbot.db")
         cursor = conn.cursor()

@@ -54,40 +54,6 @@
     display: inline-block;
     animation: typingBounce 1.2s infinite ease-in-out;
   }
-
-  /* ── MOBILE RESPONSIVE ── */
-  @media (max-width: 768px) {
-    .sidebar {
-      position: fixed !important;
-      left: -100% !important;
-      top: 0 !important;
-      height: 100% !important;
-      width: 75% !important;
-      min-width: unset !important;
-      transition: left 0.3s ease;
-      z-index: 100 !important;
-    }
-    .sidebar.open {
-      left: 0 !important;
-    }
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      z-index: 99;
-    }
-    .sidebar-overlay.show {
-      display: block;
-    }
-    .hamburger-btn {
-      display: flex !important;
-    }
-    /* delete btn selalu tampil di mobile (tidak perlu hover) */
-    .delete-btn {
-      opacity: 1 !important;
-    }
-  }
 </style>
 </head>
 <body class="font-jakarta h-screen flex overflow-hidden bg-gradient">
@@ -95,11 +61,8 @@
 <!-- Particles -->
 <div class="particles fixed inset-0 pointer-events-none z-0" id="particles"></div>
 
-<!-- Sidebar Overlay (mobile) -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
 <!-- Sidebar -->
-<div class="w-70 sidebar flex flex-col gap-4 p-5 z-10">
+<div class="w-70 min-w-70 sidebar flex flex-col gap-4 p-5 z-10">
 
   <!-- Profile Card -->
   <div class="flex gap-3 items-center p-3.5 rounded-2xl bg-white/60">
@@ -131,11 +94,6 @@
 
   <!-- Header -->
   <div class="flex items-center gap-3 px-7 py-4 bg-white/40 border-b border-purple/10">
-    <!-- Tombol Hamburger (hanya tampil di mobile) -->
-    <button class="hamburger-btn hidden items-center justify-center w-9 h-9 rounded-xl bg-purple/10 border-none cursor-pointer flex-shrink-0"
-      onclick="toggleSidebar()">
-      ☰
-    </button>
     <div class="w-10 h-10 rounded-full grad-purple p-1.5 flex-shrink-0"><img src="{{ url_for('static', filename='chatbot 4.png') }}" class="w-full h-full object-contain"></div>
     <div>
       <div class="text-base font-bold text-dark">Nara</div>
@@ -154,7 +112,7 @@
       Asisten digital untuk membantu penggunaan platform pembelajaran SD.
     </div>
 
-    <div class="w-full max-w-lg flex flex-col gap-3.5 mt-1.5 px-4">
+    <div class="w-full max-w-lg flex flex-col gap-3.5 mt-1.5">
       <div onclick="chooseMenu('platform')" class="role-card flex items-center gap-4 bg-white/75 border border-purple/10 rounded-3xl p-4 cursor-pointer shadow-sm transition hover:-translate-y-1 hover:scale-102 hover:bg-white hover:border-purple/20">
         <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl role-icon">📚</div>
         <div>
@@ -230,12 +188,6 @@ window.onload = function(){
   loadMessages();
   loadRooms();
 };
-
-// ── MOBILE: Toggle Sidebar ──
-function toggleSidebar(){
-  document.querySelector('.sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('show');
-}
 
 function setTyping(show) {
   const typing = document.getElementById("typing");
@@ -409,10 +361,6 @@ function loadRooms(){
 }
 
 function openRoom(roomId){
-  // Tutup sidebar setelah pilih room di mobile
-  document.querySelector('.sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('show');
-
   fetch(`/load_room/${roomId}`)
   .then(res => res.json())
   .then(data => {

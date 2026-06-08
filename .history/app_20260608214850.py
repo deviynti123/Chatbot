@@ -250,7 +250,8 @@ def get_response(user_input, user="Teman", history=[]):
 
     for pattern, response, tag in data:
         processed_pattern = preprocess(pattern)
-        
+
+        # sesuai Wisesa et al. (2025): 0.5*partial + 0.3*token_sort + 0.2*ratio
         score_partial = fuzz.partial_ratio(processed_input, processed_pattern)
         score_sort    = fuzz.token_sort_ratio(processed_input, processed_pattern)
         score_ratio   = fuzz.ratio(processed_input, processed_pattern)
@@ -275,21 +276,21 @@ def get_response(user_input, user="Teman", history=[]):
     if best_score >= 70:
         return random.choice([
             best_response,
-            f"{best_response} ",
-            f"{best_response} ya {user} "
+            f"{best_response} 😊",
+            f"{best_response} ya {user} 👍"
         ])
 
-    elif best_score >= 50:
+    elif best_score >= 30:
         return random.choice([
-            f"Maksud kamu tentang ini ya? \n{best_response}",
+            f"Maksud kamu tentang ini ya? 🤔\n{best_response}",
             f"Sepertinya kamu menanyakan ini:\n{best_response}"
         ])
 
     else:
         return random.choice([
-            f"Hmm, aku kurang paham nih {user} Bisa dijelaskan lebih detail?",
-            f"Maksud kamu gimana ya {user}? Coba ceritain lebih lengkap",
-            f"Aku belum nangkep maksudnya nih Kamu lagi pakai platform apa? (Google Classroom, Quizizz, atau Moodle?)",
+            f"Hmm, aku kurang paham nih {user} 🤔 Bisa dijelaskan lebih detail?",
+            f"Maksud kamu gimana ya {user}? Coba ceritain lebih lengkap 😊",
+            f"Aku belum nangkep maksudnya nih 😅 Kamu lagi pakai platform apa? (Google Classroom, Quizizz, atau Moodle?)",
             f"Bisa diperjelas lagi {user}? Misalnya: 'Cara upload tugas di Google Classroom' 📚",
         ])
 

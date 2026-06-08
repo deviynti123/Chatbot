@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NaraBot</title>
+<link rel="icon" href="{{ url_for('static', filename='NARA.png') }}" type="image/gif">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          purple: '#7c6fd4',
+          pink:   '#c084b8',
+          dark:   '#5b4b8a',
+          muted:  '#9d8ec2',
+        },
+        fontFamily: {
+          jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+        },
+        borderRadius: {
+          '4xl': '2rem',
+        }
+      }
+    }
+  }
+</script>
+</head>
+<body class="font-jakarta h-screen flex overflow-hidden bg-gradient">
+
+<!-- Particles -->
+<div class="particles fixed inset-0 pointer-events-none z-0" id="particles"></div>
+
+<!-- Sidebar -->
+<div class="w-70 min-w-70 sidebar flex flex-col gap-4 p-5 z-10">
+
+  <!-- Profile Card -->
+  <div class="flex gap-3 items-center p-3.5 rounded-2xl bg-white/60">
+    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white grad-purple text-sm">👤</div>
+    <div>
+      <div class="font-bold text-dark">{{ user }}</div>
+      {% if user == "Guest" %}
+        <a href="/login" class="text-xs text-purple no-underline">Login →</a>
+      {% else %}
+        <a href="/logout" class="text-xs text-purple no-underline">Logout</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- New Chat Button -->
+  <button onclick="newChat()"
+    class="border-none cursor-pointer py-3 rounded-2xl text-white font-semibold grad-purple transition-transform hover:-translate-y-0.5">
+    + New Chat
+  </button>
+
+  <div class="text-xs text-muted font-bold tracking-widest">RIWAYAT CHAT</div>
+
+  <!-- History List -->
+  <div class="flex-1 overflow-y-auto" id="history"></div>
+</div>
+
+<!-- Main Content -->
+<div class="flex-1 flex flex-col relative">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 px-7 py-4 bg-white/40 border-b border-purple/10">
+    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white grad-purple">🤖</div>
+    <div>
+      <div class="text-base font-bold text-dark">Nara</div>
+      <div class="text-xs text-muted">Online</div>
+    </div>
+  </div>
+
+  <!-- Splash Screen -->
+  <div id="splash" class="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10 backdrop-blur-md">
+    <!-- SESUDAH -->
+<div class="w-28 h-28 rounded-3xl flex items-center justify-center float-bot">
+  <img src="{{ url_for('static', filename='chatbot.gif') }}" class="w-full h-full object-contain rounded-3xl">
+</div>
+    <div class="text-3xl font-bold text-dark">Hai {{ user }} 👋</div>
+    <div class="text-muted text-center leading-relaxed">
+      Saya Nara ✨<br>
+      Asisten digital untuk membantu penggunaan platform pembelajaran SD.
+    </div>
+
+    <div class="w-full max-w-lg flex flex-col gap-3.5 mt-1.5">
+
+      <div onclick="chooseMenu('platform')" class="role-card flex items-center gap-4 bg-white/75 border border-purple/10 rounded-3xl p-4 cursor-pointer shadow-sm transition hover:-translate-y-1 hover:scale-102 hover:bg-white hover:border-purple/20">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl role-icon">📚</div>
+        <div>
+          <div class="text-base font-bold text-dark">Pelajari Platform</div>
+          <div class="text-sm text-muted mt-1">Panduan penggunaan fitur platform pembelajaran</div>
+        </div>
+      </div>
+
+      <div onclick="chooseMenu('bantuan')" class="role-card flex items-center gap-4 bg-white/75 border border-purple/10 rounded-3xl p-4 cursor-pointer shadow-sm transition hover:-translate-y-1 hover:scale-102 hover:bg-white hover:border-purple/20">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl role-icon">💬</div>
+        <div>
+          <div class="text-base font-bold text-dark">Bantuan Penggunaan</div>
+          <div class="text-sm text-muted mt-1">Membantu kendala saat menggunakan platform</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Chat Messages -->
+  <div id="messages" class="flex-1 overflow-y-auto p-6 flex flex-col gap-3">
+    <!-- Typing indicator -->
+    <div class="typing-indicator hidden gap-2 items-end" id="typing">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple">🤖</div>
+      <div class="bg-white px-4 py-3.5 rounded-2xl flex gap-1.5">
+        <span class="typing-dot w-2 h-2 rounded-full bg-muted"></span>
+        <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.2s"></span>
+        <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.4s"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="px-6 py-4">
+    <div class="bg-white rounded-2xl p-2 flex gap-2.5">
+      <input id="input" placeholder="Ketik pesan ke Nara..."
+        class="flex-1 border-none outline-none px-2.5 py-2.5 text-sm font-jakarta">
+      <button onclick="sendMessage()"
+        class="w-11 h-11 border-none rounded-xl cursor-pointer text-white grad-purple flex items-center justify-center">
+        ➤
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+window.onload = function(){
+  loadMessages();
+  loadRooms();
+};
+
+/* ── hapus semua suggestion yang ada ── */
+function clearSuggestions(){
+  document.querySelectorAll(".suggestion-wrap").forEach(el => el.remove());
+}
+
+function chooseMenu(menu){
+  document.getElementById("splash").style.display = "none";
+
+  if(menu === "platform"){
+    addBotMsg(`Baik 😊<br><br>Platform mana yang ingin Ibu/Bapak pelajari?`);
+    showAppChoices("platform");
+  }
+  else if(menu === "bantuan"){
+    addBotMsg(`Jangan khawatir 😊<br><br>Kendala di platform mana yang ingin dibantu?`);
+    showAppChoices("bantuan");
+  }
+}
+
+function showAppChoices(menuType){
+  clearSuggestions();
+  let box = document.getElementById("messages");
+  let wrap = document.createElement("div");
+  wrap.className = "suggestion-wrap flex flex-wrap gap-2.5 mt-1";
+
+  const apps = [
+    { label:"📗 Google Classroom", value:"google classroom" },
+    { label:"🟣 Quizizz",          value:"quizizz"          },
+    { label:"🔵 Moodle",           value:"moodle"           },
+  ];
+
+  apps.forEach(app => {
+    let btn = document.createElement("button");
+    btn.className = "suggestion-btn border-none cursor-pointer px-4 py-3 rounded-2xl bg-white text-dark font-semibold shadow-sm transition hover:-translate-y-0.5";
+    btn.innerText = app.label;
+    btn.onclick = function(){
+      clearSuggestions();
+      addUserMsg(app.label);
+      if(menuType === "platform") showPlatformMenu(app.value);
+      else showBantuanMenu(app.value);
+    };
+    wrap.appendChild(btn);
+  });
+
+  box.appendChild(wrap);
+  scrollBottom();
+}
+
+function showPlatformMenu(platform){
+  clearSuggestions();
+  const menus = {
+    "google classroom":{
+      msg:"Oke, Google Classroom! 📗<br><br>Fitur apa yang ingin dipelajari?",
+      items:["🔑 Cara Login","🏠 Cara Buat Kelas","👩‍🏫 Tambah Siswa","📝 Buat Tugas","📊 Lihat Nilai"]
+    },
+    "quizizz":{
+      msg:"Oke, Quizizz! 🟣<br><br>Fitur apa yang ingin dipelajari?",
+      items:["🔑 Cara Daftar","📝 Buat Kuis","▶️ Mulai Kuis","📊 Lihat Hasil Kuis"]
+    },
+    "moodle":{
+      msg:"Oke, Moodle! 🔵<br><br>Fitur apa yang ingin dipelajari?",
+      items:["🔑 Cara Login","📚 Buat Kursus","👩‍🏫 Tambah Siswa","📄 Upload Materi","👥 Kelola Cohort"]
+    }
+  };
+  const chosen = menus[platform];
+  addBotMsg(chosen.msg);
+  showSuggestions(chosen.items);
+}
+
+function showBantuanMenu(platform){
+  clearSuggestions();
+  const menus = {
+    "google classroom":{
+      msg:"Bantuan Google Classroom 📗<br><br>Kendala apa yang dialami?",
+      items:["🔒 Lupa Password","📤 Tidak Bisa Upload","❓ Tidak Paham Menu","⚠️ Error Sistem"]
+    },
+    "quizizz":{
+      msg:"Bantuan Quizizz 🟣<br><br>Kendala apa yang dialami?",
+      items:["🔒 Lupa Password","📤 Kuis Tidak Muncul","❓ Tidak Paham Fitur","⚠️ Siswa Tidak Bisa Masuk"]
+    },
+    "moodle":{
+      msg:"Bantuan Moodle 🔵<br><br>Kendala apa yang dialami?",
+      items:["🔒 Lupa Password","📤 Tidak Bisa Upload Materi","❓ Tidak Paham Menu","⚠️ Siswa Tidak Bisa Login"]
+    }
+  };
+  const chosen = menus[platform];
+  addBotMsg(chosen.msg);
+  showSuggestions(chosen.items);
+}
+
+function showSuggestions(items){
+  clearSuggestions();
+  let box = document.getElementById("messages");
+  let wrap = document.createElement("div");
+  wrap.className = "suggestion-wrap flex flex-wrap gap-2.5 mt-1";
+  items.forEach(item => {
+    let btn = document.createElement("button");
+    btn.className = "suggestion-btn border-none cursor-pointer px-4 py-3 rounded-2xl bg-white text-dark font-semibold shadow-sm transition hover:-translate-y-0.5";
+    btn.innerText = item;
+    btn.onclick = function(){
+      clearSuggestions();
+      document.getElementById("input").value = item;
+      sendMessage();
+    };
+    wrap.appendChild(btn);
+  });
+  box.appendChild(wrap);
+  scrollBottom();
+}
+
+function addBotMsg(text){
+  let box = document.getElementById("messages");
+  let typing = document.getElementById("typing");
+  let row = document.createElement("div");
+  row.className = "msg-row flex gap-2 items-end fade-in";
+  row.innerHTML = `
+    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple flex-shrink-0">🤖</div>
+    <div class="msg-bot max-w-[65%] px-4 py-3 rounded-2xl rounded-bl bg-white text-gray-700 leading-relaxed text-sm">${text}</div>
+  `;
+  box.insertBefore(row, typing);
+  scrollBottom();
+}
+
+function addUserMsg(text){
+  let box = document.getElementById("messages");
+  let typing = document.getElementById("typing");
+  let row = document.createElement("div");
+  row.className = "msg-row flex gap-2 items-end justify-end fade-in";
+  row.innerHTML = `
+    <div class="max-w-[65%] px-4 py-3 rounded-2xl rounded-br text-white grad-purple leading-relaxed text-sm">${text}</div>
+    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple flex-shrink-0">👤</div>
+  `;
+  box.insertBefore(row, typing);
+  scrollBottom();
+}
+
+function loadMessages(){
+  fetch("/get_messages")
+  .then(res => res.json())
+  .then(data => {
+    if(data.length > 0) document.getElementById("splash").style.display = "none";
+    data.forEach(msg => {
+      if(msg[0] === "user") addUserMsg(msg[1]);
+      else addBotMsg(msg[1]);
+    });
+  });
+}
+
+function loadRooms(){
+  fetch("/get_rooms")
+  .then(res => res.json())
+  .then(data => {
+    let history = document.getElementById("history");
+    history.innerHTML = "";
+    data.forEach(room => {
+      history.innerHTML += `
+        <div onclick="openRoom(${room[0]})"
+          class="px-3 py-3 rounded-2xl cursor-pointer mb-1.5 transition text-dark hover:bg-purple/10 text-sm">
+          💬 ${room[1]}
+        </div>`;
+    });
+  });
+}
+
+function openRoom(roomId){
+  fetch(`/load_room/${roomId}`)
+  .then(res => res.json())
+  .then(data => {
+    let box = document.getElementById("messages");
+    box.innerHTML = `
+      <div class="typing-indicator hidden gap-2 items-end" id="typing">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white grad-purple">🤖</div>
+        <div class="bg-white px-4 py-3.5 rounded-2xl flex gap-1.5">
+          <span class="typing-dot w-2 h-2 rounded-full bg-muted"></span>
+          <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.2s"></span>
+          <span class="typing-dot w-2 h-2 rounded-full bg-muted" style="animation-delay:0.4s"></span>
+        </div>
+      </div>`;
+    document.getElementById("splash").style.display = "none";
+    data.forEach(msg => {
+      if(msg[0] === "user") addUserMsg(msg[1]);
+      else addBotMsg(msg[1]);
+    });
+  });
+}
+
+function sendMessage(){
+  {% if user == "Guest" %}
+    window.location.href = "/login";
+    return;
+  {% endif %}
+  let input = document.getElementById("input");
+  let text = input.value;
+  if(text.trim() === "") return;
+  document.getElementById("splash").style.display = "none";
+  clearSuggestions();
+  addUserMsg(text);
+  input.value = "";
+  const typing = document.getElementById("typing");
+  typing.classList.remove("hidden");
+  typing.classList.add("flex");
+  fetch("/chat_api",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:text})
+  })
+  .then(res => res.json())
+  .then(data => {
+    typing.classList.add("hidden");
+    typing.classList.remove("flex");
+    addBotMsg(data.response);
+  });
+}
+
+document.getElementById("input").addEventListener("keypress", function(e){
+  if(e.key === "Enter") sendMessage();
+});
+
+function scrollBottom(){
+  let box = document.getElementById("messages");
+  box.scrollTop = box.scrollHeight;
+}
+
+function newChat(){
+  {% if user == "Guest" %}
+    window.location.href = "/login";
+  {% else %}
+    fetch("/new_chat").then(() => location.reload());
+  {% endif %}
+}
+
+// Particles
+const pc = document.getElementById("particles");
+for(let i=0;i<14;i++){
+  const p = document.createElement("div");
+  p.className = "particle absolute rounded-full bg-purple/10";
+  const size = Math.random()*10+4;
+  p.style.width = size+"px";
+  p.style.height = size+"px";
+  p.style.left = Math.random()*100+"%";
+  p.style.animationDuration = (Math.random()*8+6)+"s";
+  p.style.animationDelay = (Math.random()*8)+"s";
+  pc.appendChild(p);
+}
+
+</script>
+</body>
+</html>

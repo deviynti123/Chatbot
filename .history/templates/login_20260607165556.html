@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nara – Login</title>
+<link rel="icon" href="{{ url_for('static', filename='NARA.png') }}" type="image/gif">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          purple:      '#7c6fd4',
+          'purple-dark':'#5b4b8a',
+          pink:        '#c084b8',
+          muted:       '#9d8ec2',
+        },
+        fontFamily: {
+          jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+        },
+        width: { '70': '280px' },
+      }
+    }
+  }
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="font-jakarta h-screen flex items-center justify-center overflow-hidden bg-gradient">
+
+  <!-- Particles -->
+  <div class="fixed inset-0 pointer-events-none z-0" id="particles"></div>
+
+  <!-- Card -->
+  <div class="relative z-10 flex w-[820px] max-w-[95vw] min-h-[480px] rounded-[28px] overflow-hidden card-shadow slide-up">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel w-[45%] flex flex-col items-center justify-center px-8 py-10 relative overflow-hidden">
+      <div class="float-robot mb-5">
+        <img src="/static/chatbot.gif" alt="Nara" class="w-36 drop-shadow-lg">
+      </div>
+      <h2 class="text-white text-[22px] font-bold text-center mb-2">Halo, aku Nara!</h2>
+      <p class="text-white/75 text-[13px] text-center leading-relaxed">Asisten pintarmu yang siap<br>membantu kapan saja</p>
+      <div class="flex gap-1.5 mt-6">
+        <span class="w-5 h-2 rounded bg-white"></span>
+        <span class="w-2 h-2 rounded-full bg-white/40"></span>
+        <span class="w-2 h-2 rounded-full bg-white/40"></span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="flex-1 bg-white/75 backdrop-blur-xl flex flex-col justify-center px-10 py-12">
+
+      <h1 class="text-[26px] font-bold text-purple-dark mb-1.5">Selamat Datang!</h1>
+      <p class="text-[13px] text-muted mb-8">Masuk untuk mulai ngobrol dengan Nara</p>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert-{{ category }} px-3.5 py-2.5 rounded-xl text-[13px] mb-4">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST" action="/login">
+
+        <!-- Username -->
+        <div class="mb-4">
+          <label class="block text-[11px] font-semibold text-muted uppercase tracking-[0.8px] mb-1.5">Username</label>
+          <div class="input-wrap flex items-center bg-purple/[0.06] border border-purple/[0.15] rounded-xl px-3.5 transition focus-within:border-purple/50 focus-within:shadow-input focus-within:bg-white">
+            <span class="text-base mr-2 opacity-15"><i class="fi fi-rr-user"></i></span>
+            <input type="text" name="username" placeholder="Masukkan username" required
+              class="flex-1 border-none bg-transparent font-jakarta text-sm text-gray-700 outline-none py-3 placeholder-purple/30">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-4">
+          <label class="block text-[11px] font-semibold text-muted uppercase tracking-[0.8px] mb-1.5">Password</label>
+          <div class="input-wrap flex items-center bg-purple/[0.06] border border-purple/[0.15] rounded-xl px-3.5 transition focus-within:border-purple/50 focus-within:shadow-input focus-within:bg-white">
+            <span class="text-base mr-2 opacity-50"><i class="fi fi-rr-lock"></i></span>
+            <input type="password" name="password" id="login-pwd" placeholder="Masukkan password" required
+              class="flex-1 border-none bg-transparent font-jakarta text-sm text-gray-700 outline-none py-3 placeholder-purple/30">
+            <button type="button" onclick="togglePwd('login-pwd','login-eye')"
+              class="border-none bg-transparent cursor-pointer p-1 opacity-40 hover:opacity-70 transition text-base">
+              <i id="login-eye" class="fi fi-rr-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember & Forgot -->
+        <div class="flex justify-between items-center mb-6">
+          <label class="flex items-center gap-1.5 text-xs text-muted cursor-pointer">
+            <input type="checkbox" name="remember" class="accent-purple"> Ingat saya
+          </label>
+          <a href="/forgot_password" class="text-xs text-purple font-medium hover:underline">Lupa password?</a>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-login w-full py-3.5 border-none rounded-2xl text-white text-[15px] font-semibold cursor-pointer font-jakarta">
+          Masuk →
+        </button>
+
+      </form>
+
+      <p class="text-center mt-5 text-[13px] text-muted">
+        Belum punya akun? <a href="/signup" class="text-purple font-semibold hover:underline">Daftar sekarang</a>
+      </p>
+
+    </div>
+  </div>
+
+  <script>
+  function togglePwd(inputId, iconId){
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    if(input.type === 'password'){
+      input.type = 'text';
+      icon.className = 'fi fi-rr-eye-crossed';
+    } else {
+      input.type = 'password';
+      icon.className = 'fi fi-rr-eye';
+    }
+  }
+
+  const pc = document.getElementById('particles');
+  for(let i = 0; i < 14; i++){
+    const p = document.createElement('div');
+    p.className = 'particle absolute rounded-full';
+    const size = Math.random() * 10 + 4;
+    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*8+6}s;animation-delay:${Math.random()*8}s;`;
+    pc.appendChild(p);
+  }
+  </script>
+
+</body>
+</html>

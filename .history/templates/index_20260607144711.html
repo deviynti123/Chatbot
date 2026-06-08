@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NaraBot</title>
+<link rel="icon" href="{{ url_for('static', filename='chatbot.gif') }}" type="image/gif">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          purple: '#7c6fd4',
+          pink:   '#c084b8',
+          dark:   '#5b4b8a',
+          muted:  '#9d8ec2',
+        },
+        fontFamily: {
+          jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+        },
+      }
+    }
+  }
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="font-jakarta h-screen flex justify-center items-center overflow-hidden bg-landing">
+
+  <!-- Particles -->
+  <div class="fixed inset-0 pointer-events-none z-0" id="particles"></div>
+
+  <!-- Container -->
+  <div class="relative z-10 text-center flex flex-col items-center">
+
+    <h1 class="text-4xl font-bold text-dark tracking-wide mb-2.5 slide-up" style="animation-delay:0.2s">
+      Meet your Nara
+    </h1>
+
+    <p class="text-muted text-base mb-2.5 slide-up" style="animation-delay:0.4s">
+      Your Virtual Companion, ready to help ✦
+    </p>
+
+    <div class="slide-up" style="animation-delay:0.6s">
+      <img src="/static/chatbot.gif"
+        class="w-48 my-5 float-robot drop-shadow-purple">
+    </div>
+
+    <div class="slide-up" style="animation-delay:0.9s">
+      <button onclick="startChat()"
+        class="mt-2.5 px-10 py-4 rounded-full text-white font-semibold text-base tracking-wide cursor-pointer btn-glow shimmer-btn">
+        Let's get started
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+  function startChat(){
+    window.location.href = "/chat";
+  }
+
+  const container = document.getElementById('particles');
+  for(let i = 0; i < 18; i++){
+    const p = document.createElement('div');
+    p.className = 'particle absolute rounded-full';
+    const size = Math.random() * 12 + 4;
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      animation-duration:${Math.random()*8+6}s;
+      animation-delay:${Math.random()*8}s;
+    `;
+    container.appendChild(p);
+  }
+  </script>
+
+</body>
+</html>
